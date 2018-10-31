@@ -25,11 +25,6 @@ def Brute (l):
 				if b != None: b.unhilight (hib)
 				if id != None: control.plot_delete (id)
 
-				print ("analisando os pontos "+str(i)+" "+str(j))
-				print (a)
-				print (b)
-				print (dist)
-
 				closest = dist
 				a = l[i]
 				b = l[j]
