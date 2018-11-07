@@ -24,6 +24,7 @@ def Sweep (l):
 # Ordena por x os pontos recebidos
 	l.sort(key=lambda o: o.x)
 	
+	oo = 10000
 	closest = float("inf")
 	a = b = None
 	id = None
@@ -31,9 +32,17 @@ def Sweep (l):
 	dt = {}
 
 	for i in range (len(l)):
+		inf_down = Point(l[i].x, -oo)
+		inf_up   = Point(l[i].x, oo)
+		# Melhorar impressao de linha, tornar cor branca
+		line_plot = inf_down.lineto(inf_up)
+		control.thaw_update ()
+		control.update ()
+
 		for j in List:
 			# Checa o segmento de y em O(n) 
             #TODO: achar segmento em log(n)
+
 			if(abs(l[j].y - l[i].y) < math.sqrt(closest)):
 				dist = dist2 (l[i], l[j])
 				if dist < closest:
@@ -63,6 +72,8 @@ def Sweep (l):
 		hi = l[i].hilight(COLOR_ALT1)
 		dt[l[i]] = hi
 
+		control.plot_delete (line_plot)
+		
 		control.thaw_update()
 		control.update()
 	
