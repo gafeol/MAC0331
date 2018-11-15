@@ -7,12 +7,10 @@ from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.config import *
 import math
+import time
 
 
 List = []
-
-def comparax(x, y):
-	return x.x - y.x
 
 def Sweep (l):
 	"Algoritmo que usa line sweep para encontrar o par de pontos mais proximo"
@@ -24,7 +22,7 @@ def Sweep (l):
 # Ordena por x os pontos recebidos
 	l.sort(key=lambda o: o.x)
 	
-	oo = 10000
+	oo = 10000000
 	closest = float("inf")
 	a = b = None
 	id = None
@@ -38,6 +36,7 @@ def Sweep (l):
 		line_plot = inf_down.lineto(inf_up)
 		control.thaw_update ()
 		control.update ()
+#		time.sleep(0.2)
 
 		for j in List:
 			# Checa o segmento de y em O(n) 
