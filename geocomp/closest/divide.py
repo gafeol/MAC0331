@@ -32,12 +32,21 @@ def closest_pair(v, w, l, r):
 	
 	m = int((l + r)/2)
 	x = v[m].x
+	
+	#Vertical line dividing
+	vid = control.plot_vert_line(v[m].x)
+	control.sleep()
+
 	res = min(closest_pair(v, w, l, m), closest_pair(v, w, m, r))
+
+	control.plot_delete(vid)
 
 	# Merge
 	i = l
 	j = m
 	aux = l
+
+	pa = pb = None
 	while i < m and j < r :
 		if v[i].y < v[j].y:
 			w[aux] = v[i]
