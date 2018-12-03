@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import math
+
+from geocomp.common.point   import Point
+from geocomp.common.segment import Segment
+
+
 """Primitivas geometricas usadas nos algoritmos
 
 Use o modulo geocomp.common.guiprim para que essas primitivas sejam
@@ -8,52 +15,348 @@ desenh-las de um jeito especfico para um determinado algoritmo.
 Veja geocomp.convexhull.quickhull para um exemplo.
 """
 
+COLIN_TOLERANCE = 10
+T  = 10 ** COLIN_TOLERANCE
+T2 = 10.0 ** COLIN_TOLERANCE
+
+SMALLEST_NUM = 0.00000001
+INFINITY     = 100000
+
 # Numero de vezes que a funcao area2 foi chamada
 num_area2 = 0
 # Numero de vezes que a funcao dist2 foi chamada
 num_dist = 0
 
 def area2 (a, b, c):
-	"Retorna duas vezes a rea do tringulo determinado por a, b, c"
-	global num_area2
-	num_area2 = num_area2 + 1
-	return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)
+    "Retorna duas vezes a rea do tringulo determinado por a, b, c"
+    global num_area2
+    num_area2 = num_area2 + 1
+    return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)
+
+def area_sign(a, b, c):
+    area = area2(a, b, c)
+    if area > 0:
+        return 1
+    if area < 0:
+        return -1
+    return 0
 
 def left (a, b, c):
-	"Verdadeiro se c est  esquerda do segmento orientado ab"
-	return area2 (a, b, c) > 0
+    "Verdadeiro se c est  esquerda do segmento orientado ab"
+    return area2 (a, b, c) > 0
 
 def left_on (a, b, c):
-	"Verdadeiro se c est  esquerda ou sobre o segmento orientado ab"
-	return area2 (a, b, c) >= 0
+    "Verdadeiro se c est  esquerda ou sobre o segmento orientado ab"
+    return area2 (a, b, c) >= 0
 
 def collinear (a, b, c):
-	"Verdadeiro se a, b, c sao colineares"
-	return area2 (a, b, c) == 0
+    "Verdadeiro se a, b, c sao colineares"
+    return area2 (a, b, c) == 0
 
 def right (a, b, c):
-	"Verdadeiro se c est  direita do segmento orientado ab"
-	return not (left_on (a, b, c))
+    "Verdadeiro se c est  direita do segmento orientado ab"
+    return not (left_on (a, b, c))
 
 def right_on (a, b, c):
-	"Verdadeiro se c est  direita ou sobre o segmento orientado ab"
-	return not (left (a, b, c))
+    "Verdadeiro se c est  direita ou sobre o segmento orientado ab"
+    return not (left (a, b, c))
 
 def dist2 (a, b):
-	"Retorna o quadrado da distancia entre os pontos a e b"
-	global num_dist
-	num_dist = num_dist + 1
-	dy = b.y - a.y
-	dx = b.x - a.x
+    "Retorna o quadrado da distancia entre os pontos a e b"
+    global num_dist
+    num_dist = num_dist + 1
+    dy = b.y - a.y
+    dx = b.x - a.x
 
-	return dy*dy + dx*dx
+    return dy*dy + dx*dx
 
 def get_count ():
-	"Retorna o numero total de operacoes primitivas realizadas"
-	return num_area2 + num_dist
+    "Retorna o numero total de operacoes primitivas realizadas"
+    return num_area2 + num_dist
 
 def reset_count ():
-	"Zera os contadores de operacoes primitivas"
-	global num_area2, num_dist
-	num_area2 = 0
-	num_dist = 0
+    "Zera os contadores de operacoes primitivas"
+    global num_area2, num_dist
+    num_area2 = 0
+    num_dist = 0
+
+def ccw_angle(u, v):
+    if u is None or v is None:
+        raise ValueError("Illegal argument of None type")
+    dot   = u[0] * v[0] + u[1] * v[1]
+    det   = u[0] * v[1] - u[1] * v[0]
+    theta = math.atan2(det, dot)
+
+    if theta >= 0:
+        return theta
+    return 2.0 * math.pi + theta
+
+def cw_angle(u, v):
+    if u is None or v is None:
+        raise ValueError("Illegal argument of None type")
+    dot   = u[0] * v[0] + u[1] * v[1]
+    det   = u[0] * v[1] - u[1] * v[0]
+    theta = math.atan2(det, dot)
+
+    if theta < 0:
+        return 2 * math.pi + theta
+    return theta
+
+def cross(u, v):
+    if u is None or v is None:
+        raise ValueError("Illegal argument of None type")
+
+    if len(u) != len(v):
+        raise ValueError("Vectors have different dimensions")
+
+    dim = len(u)
+    w = []
+    for i in range(dim):
+        w.append(0)
+        for j in range(dim):
+            if j != i:
+                for k in range(dim):
+                    if k != i:
+                        if k > j:
+                            w[i] += u[j] * v[k]
+                        elif k < j:
+                            w[i] -= u[j] * v[k]
+    return w
+
+def dist_pt_line_sq(p, a, b):
+    if p is None or \
+       a is None or \
+       b is None:
+        raise ValueError("Illegal argument of None type")
+
+    if len(p) != len(a) or \
+       len(p) != len(b) or \
+       len(a) != len(b):
+        raise ValueError("Points have different dimensions")
+
+    ap = [p[i] - a[i] for i in range(len(a))]
+    r  = [b[i] - a[i] for i in range(len(a))]
+
+    num = 0
+    for i in cross(ap, r):
+        num += i * i
+
+    den = 0
+    for i in r:
+        den += i * i
+
+    return num / den
+
+def intersect(a, b, c, d):
+    if a is None or \
+       b is None or \
+       c is None or \
+       d is None:
+        raise ValueError("Points must not be None")
+
+    if intersect_prop(a, b, c, d):
+        return True
+
+    if on_segment(a, b, c) or \
+       on_segment(a, b, d) or \
+       on_segment(c, d, a) or \
+       on_segment(c, d, b):
+        return True
+    return False
+
+def intersect_prop(a, b, c, d):
+    if a is None or \
+       b is None or \
+       c is None or \
+       d is None:
+        raise ValueError("Points must not be None")
+
+    if collinear(a, b, c) or \
+       collinear(a, b, d) or \
+       collinear(a, c, d) or \
+       collinear(b, c, d):
+        return False
+
+    return left(a, b, c) ^ left(a, b, d) and \
+           left(c, d, a) ^ left(c, d, b)
+
+def intersection_point(a, b, c, d):
+    if a is None or \
+       b is None or \
+       c is None or \
+       d is None:
+        raise ValueError()
+    u = b - a
+    v = d - c
+    w = a - c
+    d = perp(u, v)
+
+    if abs(d) < SMALLEST_NUM:
+        if perp(u, w) != 0 or perp(v, w) != 0:
+            return None
+
+        du = dot(u, u)
+        dv = dot(v, v)
+        if du == 0 and dv == 0:
+            if a != c:
+                return None
+            return a
+
+        if du == 0:
+            if not on_segment(c, d, a):
+                return None
+            return a
+        if dv == 0:
+            if not on_segment(a, b, c):
+                return None
+            return c
+
+        w2 = b - c
+        if v[0] != 0:
+            t0 = w[0] / v[0]
+            t1 = w2[0] / v[0]
+        else:
+            t0 = w[1] / v[1]
+            t1 = w2[1] / v[1]
+
+        if t0 > t1:
+            t = t0
+            t0 = t1
+            t1 = t
+
+        if t0 > 1 or t1 < 0:
+            return None
+
+        if t0 < 0:
+            t0 = 0
+        if t1 > 1:
+            t1 = 1
+        if t0 == t1:
+            return c + Point(t0 * v[0], t0 * v[1])
+
+        p0 = c + Point(t0 * v[0], t0 * v[1])
+        p1 = c + Point(t1 * v[0], t1 * v[1])
+        return Segment(p0, p1)
+
+    si = perp(v, w) / d
+    if si < 0 or si > 1:
+        return None
+
+    ti = perp(u, w) / d
+    if ti < 0 or ti > 1:
+        return None
+    return a + Point(si * u[0], si * u[1])
+
+def on_segment(a, b, c):
+    if a is None or \
+       b is None or \
+       c is None:
+        raise ValueError("Points must not be None")
+
+    if not collinear(a, b, c):
+        return False
+
+    if a.x != b.x:
+        return \
+            a.x <= c.x <= b.x or \
+            b.x <= c.x <= a.x
+    return \
+        a.y <= c.y <= b.y or \
+        b.y <= c.y <= a.y
+
+def point_in_polygon(p, polygon):
+    if p is None or polygon is None:
+        raise ValueError("Illegal argument of None Type")
+
+    v = polygon.vertices()
+
+    if len(v) < 3:
+        raise ValueError("Polygon must have at least three vertices")
+
+    if right_on(v[0], v[1], p) or \
+       left_on(v[0], v[-1], p):
+        return False
+
+    lo = 0
+    hi = len(v) - 1
+    while hi - lo > 1:
+        mid = (hi + lo) // 2
+        if right(v[0], v[mid], p):
+            hi = mid
+        else:
+            lo = mid
+
+    r0 = abs(area2(v[0], v[lo], v[hi]))
+
+    r1 = abs(area2(v[0],  v[lo], p))
+    r2 = abs(area2(v[0],  v[hi], p))
+    r3 = abs(area2(v[hi], v[lo], p))
+
+    return r0 == (r1 + r2 + r3) and r3 != 0
+
+def dot(u, v):
+    return u[0] * v[0] + u[1] * v[1]
+
+def perp(a, b):
+    if a is None or b is None:
+        raise ValueError("Illegal argument of None type")
+    return a[0] * b[1] - a[1] * b[0]
+
+def segment_in_poly(a, b, poly):
+    if a is None or \
+       b is None or \
+       poly is None:
+        raise ValueError("Illegal argument of None type")
+
+    v = poly.vertices()
+
+    if len(v) < 3:
+        raise ValueError("Polygon must have at least three vertices")
+
+    if a == b:
+        return point_in_polygon(a, poly)
+
+    te = 0.0
+    tl = 1.0
+    ds = b - a
+    v.append(v[0])
+
+    for i in range(len(v) - 1):
+        e = v[i + 1] - v[i]
+        N = perp(e, a - v[i])
+        D = -perp(e, ds)
+        if abs(D) < SMALLEST_NUM:
+            if N < 0:
+                return False
+            continue
+
+        t = N / D
+        if D < 0:
+            if t > te:
+                te = t
+                if te > tl:
+                    return False
+        elif t < tl:
+            tl = t
+            if tl < te:
+                return False
+
+    p0 = a + Point(te * ds[0], te * ds[1])
+    p1 = a + Point(tl * ds[0], tl * ds[1])
+    p_mid = Point((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+    return point_in_polygon(p_mid, poly)
+
+def angle(p0, p1, p2):
+    a   = (p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2
+    b   = (p2[0] - p0[0]) ** 2 + (p2[1] - p0[1]) ** 2
+    c   = (p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2
+    cos = (a + c - b) / (2 * math.sqrt(a) * math.sqrt(c) + COLIN_TOLERANCE)
+    return math.acos(int(cos * T) / T2)
+
+def point_segment_dist(p1, p2, edge):
+    ip = intersection_point(p1, p2, edge.p1, edge.p2)
+    if ip is not None:
+        if type(ip) is Segment:
+            return dist2(p1, ip.upper)
+        return dist2(p1, ip)
+    return 0

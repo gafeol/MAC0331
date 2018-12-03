@@ -1,45 +1,70 @@
 #!/usr/bin/env python
 """Modulo para leitura de um arquivo de dados"""
 
-from .point import Point
+from geocomp.common.point   import Point
+from geocomp.common.polygon import Polygon
+from geocomp.common.segment import Segment
 
-def open_file (name):
-	"""Le o arquivo passado, e retorna o seu conteudo
-	
-	Atualmente, ele espera que o arquivo contenha uma lista de pontos,
-	um ponto por linha, as duas coordenadas em cada linha. Exemplo:
-	
-	0 0
-	0 1
-	10 100
-	
-	"""
-	f = open (name, 'r')
-	#t = range (5000)
-	lista = []
-	cont = 0
+""" 
 
-	for linha in f.readlines ():
-		if linha[0] == '#': continue
+* Função que le pontos, vértices e segmentos de um arquivo, ignorando
+  linhas que começam por #
 
-		coord = linha.split()
+Essa funão lê os seguintes objetos
 
-		fields = len (coord)
-		if fields == 0: continue
-		if fields != 2: raise 'cada linha deve conter 2 coordenadas'
+ * Ponto: duas coordenadas separadas por espaço em uma linha
 
-		x = float (coord[0])
-		y = float (coord[1])
-		lista.append (Point (x, y))
+ * Segmento: 4 coordenadas separadas por espaço em uma linha
 
-	return lista
+ * uma série de linhas, delimitadas por uma linha com '[' no começo e
+   uma com ']' no final, e os pontos do polígono em ordem
+   anti-horário, sendo cada linha as duas coordenadas separadas por
+   espaços.
 
-if __name__ == '__main__':
-	import sys
+Note que espera-se que os objetos retornados tenham a função 'plot'
 
-	for i in sys.argv[1:]:
-		print((i,':'))
-		lista = open_file (i)
-		print(('  ',repr(len(lista)), 'pontos:'))
-		for p in lista:
-			print(p)
+
+"""
+def read(filename):
+    with open(filename) as file:
+        i = 0
+        vertices = []
+        data = []
+        expecting_polygon = False
+        for line in file:
+            i += 1
+            line = line.split()
+            if len(line) == 0 or line[0] == "#":
+                continue
+            if line[0] == "[":
+                expecting_polygon = True
+            elif line[0] == "]":
+                expecting_polygon = False
+                data.append(Polygon(vertices))
+                vertices = []
+            elif len(line) == 4:
+                data.append(
+                    Segment(
+                        Point(float(line[0]), float(line[1])),
+                        Point(float(line[2]), float(line[3]))
+                    )
+                )
+            elif len(line) == 2:
+                if expecting_polygon:
+                    vertices.append(Point(float(line[0]), float(line[1])))
+                else:
+                    data.append(Point(float(line[0]), float(line[1])))
+            else:
+                raise ValueError(
+                    "Invalid input from file: {}: line: {}: {}".format(filename, i, line))
+        return data
+
+# if __name__ == '__main__':
+#     import sys
+#
+#     for i in sys.argv[1:]:
+#         print((i,':'))
+#         lista = read_points (i)
+#         print(('  ',repr(len(lista)), 'pontos:'))
+#         for p in lista:
+#             print(p)
