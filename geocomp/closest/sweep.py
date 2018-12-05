@@ -13,6 +13,28 @@ import time
 
 T = Treap()
 
+vert_lines = []
+
+def hachura(l, r):
+	global vert_lines
+	for ln in vert_lines:
+		control.plot_delete(ln)
+
+	if(l == float("inf")):
+		return 
+	stp = (r - l)/10.
+
+	while(l+stp < r):
+		vid = control.plot_vert_line(l+stp, COLOR_ALT2)
+		vert_lines.append(vid)
+		l += stp
+	
+def clear():
+	global vert_lines
+	for ln in vert_lines:
+		control.plot_delete(ln)
+	
+
 def Sweep (l):
 	"Algoritmo que usa line sweep para encontrar o par de pontos mais proximo"
 	if len (l) < 2: return None
@@ -33,6 +55,10 @@ def Sweep (l):
 		# Melhorar impressao de linha, tornar cor branca
 
 		vid = control.plot_vert_line(l[i].x)
+		oid = None
+		if(closest != float("inf")):
+			oid = control.plot_vert_line(l[i].x - math.sqrt(closest))
+			hachura(l[i].x - math.sqrt(closest), l[i].x)
 		control.sleep()
 		control.thaw_update ()
 		control.update ()
@@ -61,6 +87,11 @@ def Sweep (l):
 				hia = a.hilight ()
 				hib = b.hilight ()
 				id = a.lineto (b)
+
+				if(oid != None):
+					control.plot_delete(oid)
+				oid = control.plot_vert_line(l[i].x - math.sqrt(closest))
+				hachura(l[i].x - math.sqrt(closest), l[i].x)
 				control.thaw_update ()
 				control.update ()
 
@@ -72,12 +103,16 @@ def Sweep (l):
 		dt[l[i]] = hi
 
 		control.plot_delete (vid)
+		if(oid != None):
+			control.plot_delete(oid)
 		
 		control.thaw_update()
 		control.update()
 	
 	for p in l:
 		p.unhilight(dt[p])
+	
+	clear()
 
 	control.thaw_update()
 	control.update()
