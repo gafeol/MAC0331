@@ -87,6 +87,7 @@ def check(l, epsSq):
 					jj = j + dj
 					if ii in grid and jj in grid[ii]:
 						distSq = getdist2(p, grid[ii][jj])
+						# Fazer alteracao de grid no final
 						if(distSq < epsSq):
 							a = grid[ii][jj]
 							b = p

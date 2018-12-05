@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+
 """Algoritmo de line sweep"""
 
 from geocomp.common.segment import Segment
@@ -7,43 +9,19 @@ from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.config import *
 from geocomp.closest.treap import *
+from geocomp.closest.square import *
 import math
 import time
 
 
 T = Treap()
 
-vert_lines = []
-
-def hachura(l, r):
-	return
-	global vert_lines
-	for ln in vert_lines:
-		control.plot_delete(ln)
-
-	if(l == float("inf")):
-		return 
-	stp = (r - l)/10.
-
-	while(l+stp < r):
-		vid = control.plot_vert_line(l+stp, COLOR_ALT2)
-		vert_lines.append(vid)
-		l += stp
-	
-def clear():
-	global vert_lines
-	for ln in vert_lines:
-		control.plot_delete(ln)
-	
-
 def Sweep (l):
 	"Algoritmo que usa line sweep para encontrar o par de pontos mais proximo"
 	if len (l) < 2: return None
 
-	#List.clear()
 	T.clear()
 
-	# Ordena por x os pontos recebidos
 	l.sort(key=lambda o: o.x)
 	
 	closest = float("inf")
@@ -53,16 +31,12 @@ def Sweep (l):
 	ult = 0
 
 	for i in range (len(l)):
-		# Melhorar impressao de linha, tornar cor branca
-
+		control.freeze_update ()
+		hid = l[i].hilight('red')
 		vid = control.plot_vert_line(l[i].x)
 		oid = None
 		if(closest != float("inf")):
 			oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
-			hachura(l[i].x - math.sqrt(closest), l[i].x)
-		control.sleep()
-		control.thaw_update ()
-		control.update ()
 
 		# Remocao em O(lgn)
 		while(ult < i and math.sqrt(closest) < l[i].x - l[ult].x):
@@ -70,9 +44,22 @@ def Sweep (l):
 			l[ult].unhilight(dt[l[ult]])
 			ult += 1
 
+		control.thaw_update ()
+		control.update ()
+
+		# Checando se atualiza a distancia minima entre pontos em O(lgn)
+		## Cria box 
+		box_id = lx = None
+		rz = 0
+		if(closest != float("inf")):
+			rz = math.sqrt(closest)
+			lx = l[i].x - rz
+		box_id = plot_square(lx, l[i].y - rz, l[i].x, l[i].y+rz)
+		control.sleep()
 
 		mn = Point(l[i].x, l[i].y - math.sqrt(closest))
 		o = T.findPoint(mn);
+
 		while(o != None and abs(o.y-l[i].y) <= math.sqrt(closest)):
 			dist = dist2 (l[i], o)
 			if dist < closest:
@@ -85,21 +72,28 @@ def Sweep (l):
 				a = l[i]
 				b = o
 
+				rz = math.sqrt(closest)
+				if(lx == None):
+					lx = l[i].x - rz
+				erase_square(box_id)
+				box_id = plot_square(lx, l[i].y - rz, l[i].x, l[i].y + rz)
+
 				hia = a.hilight ()
 				hib = b.hilight ()
 				id = a.lineto (b)
 
-				if(oid != None):
-					control.plot_delete(oid)
-				oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
-				hachura(l[i].x - math.sqrt(closest), l[i].x)
-				control.thaw_update ()
-				control.update ()
+				if(oid == None):
+					oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
+				control.sleep()
 
 			o = T.findUpperPoint(o)
 
-		#List.append(i)
+		## Remove box
+		erase_square(box_id)
+
+		# Insere o ponto na Treap - O(lgn)
 		T.insertPoint(l[i])
+		l[i].unhilight(hid)
 		hi = l[i].hilight(COLOR_ALT1)
 		dt[l[i]] = hi
 
@@ -113,8 +107,6 @@ def Sweep (l):
 	for p in l:
 		p.unhilight(dt[p])
 	
-	clear()
-
 	control.thaw_update()
 	control.update()
 

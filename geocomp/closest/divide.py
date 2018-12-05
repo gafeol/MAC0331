@@ -20,12 +20,6 @@ hia = None
 b = None
 hib = None
 id = None
-distcnt = 0
-
-def getdist2(a, b):
-	global distcnt
-	distcnt += 1
-	return dist2(a, b)
 
 
 def closest_pair(v, w, l, r):
@@ -50,20 +44,21 @@ def _closest_pair(v, w, l, r):
 	x = v[m].x
 	
 	#Vertical line dividing
-	vid = control.plot_vert_line(v[m].x)
+	vid = control.plot_vert_line(x)
 	control.sleep()
 
 	lans = _closest_pair(v, w, l, m)
 
 	control.plot_delete(vid)
-	vid = control.plot_vert_line(v[m].x, COLOR_ALT2)
+	vid = control.plot_vert_line(x, COLOR_ALT2)
 	control.sleep()
 
 	rans = _closest_pair(v, w, m, r)
 
 	control.plot_delete(vid)
-	vid = control.plot_vert_line(v[m].x, COLOR_ALT3)
+	vid = control.plot_vert_line(x, COLOR_ALT3)
 	control.sleep()
+
 	
 	bst = ot = None
 
@@ -88,6 +83,11 @@ def _closest_pair(v, w, l, r):
 	if(ot['id'] != None):
 		control.plot_delete(ot['id'])
 	control.sleep()
+
+	vlid = vrid = None
+	if(res != float("inf")):
+		vlid = control.plot_vert_line(x - res, COLOR_ALT5)
+		vrid = control.plot_vert_line(x + res, COLOR_ALT5)
 
 	# Merge
 	i = l
@@ -118,10 +118,12 @@ def _closest_pair(v, w, l, r):
 	for i in range(l, r):
 		v[i] = w[i]
 		if sq(v[i].x - x) < sq(res):
+			hv = v[i].hilight(COLOR_ALT4)
+			control.sleep()
 			for j in range(s-1, l-1, -1):
 				if sq(w[i].y - w[j].y) >= res*res:
 					break;
-				dis = math.sqrt(getdist2(w[i], w[j]))
+				dis = math.sqrt(dist2(w[i], w[j]))
 
 				if res > dis:
 					res = dis
@@ -141,10 +143,15 @@ def _closest_pair(v, w, l, r):
 					control.thaw_update()
 					control.update()
 
+			v[i].unhilight(hv)
 			w[s] = v[i]
 			s = s+1
 
 	control.plot_delete(vid)
+	if(vlid != None):
+		control.plot_delete(vlid)
+	if(vrid != None):
+		control.plot_delete(vrid)
 	control.sleep()
 
 	return make(res, a, hia, b, hib, id)
@@ -152,14 +159,11 @@ def _closest_pair(v, w, l, r):
 
 def Divide (l):
 	"Algoritmo que usa divide and conquer para encontrar o par de pontos mais proximo"
-	global ans, a, b, distcnt
-
-	distcnt = 0
+	global ans, a, b
 
 	if len (l) < 2: 
 		return None
 
-	# Ordena por x os pontos recebidos
 	l.sort(key=lambda o: o.x)
 	
 	L = []
@@ -171,8 +175,7 @@ def Divide (l):
 	a = ans['a']
 	b = ans['b']
 
-	# PRINTAR INFOS NO FINAL
 	ret = Segment (a, b)
-	ret.extra_info = 'distancia: %.2f, chamadas de dist2: %d'%(dis, distcnt)
+	ret.extra_info = 'distancia: %.2f'%(dis)
 	return ret
 	
