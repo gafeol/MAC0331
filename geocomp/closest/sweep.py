@@ -26,10 +26,8 @@ def Sweep (l):
 	closest = float("inf")
 	a = b = None
 	id = None
-
 	dt = {}
 	ult = 0
-
 
 	for i in range (len(l)):
 		# Melhorar impressao de linha, tornar cor branca
@@ -38,6 +36,13 @@ def Sweep (l):
 		control.sleep()
 		control.thaw_update ()
 		control.update ()
+
+		# Remocao em O(lgn)
+		while(ult < i and math.sqrt(closest) < l[i].x - l[ult].x):
+			T.erasePoint(l[ult])
+			l[ult].unhilight(dt[l[ult]])
+			ult += 1
+
 
 		mn = Point(l[i].x, l[i].y - math.sqrt(closest))
 		o = T.findPoint(mn);
@@ -60,42 +65,6 @@ def Sweep (l):
 				control.update ()
 
 			o = T.findUpperPoint(o)
-		'''
-		for j in List:
-			# Checa o segmento de y em O(n) 
-            #TODO: achar segmento em log(n)
-
-			if(abs(l[j].y - l[i].y) < math.sqrt(closest)):
-				dist = dist2 (l[i], l[j])
-				if dist < closest:
-					control.freeze_update ()
-					if a != None: a.unhilight (hia)
-					if b != None: b.unhilight (hib)
-					if id != None: control.plot_delete (id)
-
-					closest = dist
-					a = l[i]
-					b = l[j]
-
-					hia = a.hilight ()
-					hib = b.hilight ()
-					id = a.lineto (b)
-					control.thaw_update ()
-					control.update ()
-		'''
-
-		# Remocao do line sweep em O(n)
-		'''
-		for j in List:
-			if math.sqrt(closest) < l[i].x - l[j].x:
-				List.remove(j)
-				l[j].unhilight(dt[l[j]])
-		'''
-		# Remocao em O(lgn)
-		while(ult < i and math.sqrt(closest) < l[i].x - l[ult].x):
-			T.erasePoint(l[ult])
-			l[ult].unhilight(dt[l[ult]])
-			ult += 1
 
 		#List.append(i)
 		T.insertPoint(l[i])

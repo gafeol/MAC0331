@@ -32,7 +32,7 @@ def Brute (l):
 				hia = a.hilight ()
 				hib = b.hilight ()
 				id = a.lineto (b)
-				control.thaw_update ()
+				control.thaw_update() 
 				control.update ()
 	
 	ret = Segment (a, b)

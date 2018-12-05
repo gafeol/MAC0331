@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """Algoritmo de line sweep"""
 
-# BUG: 0
-
 from geocomp.common.segment import Segment
 from geocomp.common.point import Point
 from geocomp.common import control
@@ -16,19 +14,37 @@ def sq(x):
 
 oo = float("inf")
 
-
 ans = oo
 a = None
 hia = None
 b = None
 hib = None
 id = None
+distcnt = 0
+
+def getdist2(a, b):
+	global distcnt
+	distcnt += 1
+	return dist2(a, b)
+
 
 def closest_pair(v, w, l, r):
-	global ans, a, b, id, hia, hib
+	ans = _closest_pair(v, w, l, r)
+	print(ans)
+	return ans.dist
+
+def make(dist, a, hia, b, hib, id):
+	return {"dist": dist, "a": a, "hia": hia, "b": b, "hib": hib, "id": id}
+	
+
+def _closest_pair(v, w, l, r):
+	ans = -1.
+	a = b = None
+	hia = hib = None
+	id = None
 
 	if l + 1 >= r: 
-		return oo
+		return make(oo, None, None, None, None, None)
 	
 	m = int((l + r)/2)
 	x = v[m].x
@@ -37,9 +53,41 @@ def closest_pair(v, w, l, r):
 	vid = control.plot_vert_line(v[m].x)
 	control.sleep()
 
-	res = min(closest_pair(v, w, l, m), closest_pair(v, w, m, r))
+	lans = _closest_pair(v, w, l, m)
 
 	control.plot_delete(vid)
+	vid = control.plot_vert_line(v[m].x, COLOR_ALT2)
+	control.sleep()
+
+	rans = _closest_pair(v, w, m, r)
+
+	control.plot_delete(vid)
+	vid = control.plot_vert_line(v[m].x, COLOR_ALT3)
+	control.sleep()
+	
+	bst = ot = None
+
+	if(lans['dist'] < rans['dist']):
+		bst = lans
+		ot = rans
+	else:
+		bst = rans
+		ot = lans
+
+	res = bst['dist']
+	a = bst['a']
+	hia = bst['hia']
+	b = bst['b']
+	hib = bst['hib']
+	id = bst['id']
+
+	if(ot['a'] != None):
+		ot['a'].unhilight(ot['hia'])
+	if(ot['b'] != None):
+		ot['b'].unhilight(ot['hib'])
+	if(ot['id'] != None):
+		control.plot_delete(ot['id'])
+	control.sleep()
 
 	# Merge
 	i = l
@@ -73,16 +121,15 @@ def closest_pair(v, w, l, r):
 			for j in range(s-1, l-1, -1):
 				if sq(w[i].y - w[j].y) >= res*res:
 					break;
-				dis = math.sqrt(dist2(w[i], w[j]))
+				dis = math.sqrt(getdist2(w[i], w[j]))
 
-				res = min(res, dis)
+				if res > dis:
+					res = dis
 
-				if ans > res:
-					ans = res
 					control.freeze_update()
 					if a != None: a.unhilight(hia)
 					if b != None: b.unhilight(hib)
-					if(id != None): control.plot_delete(id)
+					if id != None: control.plot_delete(id)
 
 					a = w[i]
 					b = w[j]
@@ -96,31 +143,36 @@ def closest_pair(v, w, l, r):
 
 			w[s] = v[i]
 			s = s+1
-	return res
+
+	control.plot_delete(vid)
+	control.sleep()
+
+	return make(res, a, hia, b, hib, id)
 					
 
 def Divide (l):
 	"Algoritmo que usa divide and conquer para encontrar o par de pontos mais proximo"
-	global ans, a, b
+	global ans, a, b, distcnt
+
+	distcnt = 0
 
 	if len (l) < 2: 
 		return None
-	ans = oo
-	a = None
-	b = None
 
 	# Ordena por x os pontos recebidos
 	l.sort(key=lambda o: o.x)
 	
-# Como que aloca len(l) posicoes na nova lista
 	L = []
 	for i in range(len(l)):
 		L.append(0)
 
-	dis = closest_pair(l, L, 0, len(l))
+	ans = _closest_pair(l, L, 0, len(l))
+	dis = ans['dist']
+	a = ans['a']
+	b = ans['b']
 
 	# PRINTAR INFOS NO FINAL
 	ret = Segment (a, b)
-	ret.extra_info = 'distancia: %.2f'%dis
+	ret.extra_info = 'distancia: %.2f, chamadas de dist2: %d'%(dis, distcnt)
 	return ret
 	

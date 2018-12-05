@@ -24,24 +24,27 @@ def plot_grid(l, eps):
 		mny = min(mny, p.y)
 		mxy = max(mxy, p.y)
 		mxx = max(mxx, p.x)
-
-
 	mnx -= 5*eps
 	mny -= 5*eps
 	mxx += 5*eps
 	mxy += 5*eps
+
+
+	# Limitar o numero de retas no grid 
+	maxline = 200
+	stp = max(max(mxx - mnx, mxy - mny)/maxline, eps/2.)
 
 	x = mnx
 	grid_lines = []
 	while(x < mxx):
 		id = control.plot_vert_line(x)
 		grid_lines.append(id)
-		x += eps/2.
+		x += stp
 	y = mny
 	while(y < mxy):
 		id = control.plot_horiz_line(y)
 		grid_lines.append(id)
-		y += eps/2.
+		y += stp
 	
 	control.sleep()
 	return grid_lines
@@ -108,6 +111,7 @@ def Randomized (l):
 	b = l[1]
 	epsSq = getdist2(a, b)
 	while(epsSq > 0):
+		shuffle(l)
 		epsSq = check(l, epsSq)
 	
 	a.lineto(b)

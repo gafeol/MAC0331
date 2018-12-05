@@ -174,12 +174,3 @@ class Treap(object):
 	def clear(self):
 		self.root = None
 
-
-t = Treap()
-t.check()
-t.insert([1, 1])
-t.check()
-t.insert([2, 2])
-t.check()
-t.insert([3, 3])
-t.check()
