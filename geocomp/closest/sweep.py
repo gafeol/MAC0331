@@ -16,6 +16,7 @@ T = Treap()
 vert_lines = []
 
 def hachura(l, r):
+	return
 	global vert_lines
 	for ln in vert_lines:
 		control.plot_delete(ln)
@@ -57,7 +58,7 @@ def Sweep (l):
 		vid = control.plot_vert_line(l[i].x)
 		oid = None
 		if(closest != float("inf")):
-			oid = control.plot_vert_line(l[i].x - math.sqrt(closest))
+			oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
 			hachura(l[i].x - math.sqrt(closest), l[i].x)
 		control.sleep()
 		control.thaw_update ()
@@ -90,7 +91,7 @@ def Sweep (l):
 
 				if(oid != None):
 					control.plot_delete(oid)
-				oid = control.plot_vert_line(l[i].x - math.sqrt(closest))
+				oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
 				hachura(l[i].x - math.sqrt(closest), l[i].x)
 				control.thaw_update ()
 				control.update ()
