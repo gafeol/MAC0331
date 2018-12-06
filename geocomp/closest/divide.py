@@ -6,6 +6,7 @@ from geocomp.common.point import Point
 from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.config import *
+from . import square
 import math
 import time
 
@@ -88,6 +89,7 @@ def _closest_pair(v, w, l, r):
 	if(res != float("inf")):
 		vlid = control.plot_vert_line(x - res, COLOR_ALT5)
 		vrid = control.plot_vert_line(x + res, COLOR_ALT5)
+		control.sleep()
 
 	# Merge
 	i = l
@@ -120,6 +122,10 @@ def _closest_pair(v, w, l, r):
 		if sq(v[i].x - x) < sq(res):
 			hv = v[i].hilight(COLOR_ALT4)
 			control.sleep()
+			square_id = None
+			if(res != float("inf")):
+				square_id = square.plot_square(v[i].x-res, v[i].y-res, v[i].x+res, v[i].y+res)
+				control.sleep()
 			for j in range(s-1, l-1, -1):
 				if sq(w[i].y - w[j].y) >= res*res:
 					break;
@@ -127,7 +133,6 @@ def _closest_pair(v, w, l, r):
 
 				if res > dis:
 					res = dis
-
 					control.freeze_update()
 					if a != None: a.unhilight(hia)
 					if b != None: b.unhilight(hib)
@@ -142,10 +147,11 @@ def _closest_pair(v, w, l, r):
 
 					control.thaw_update()
 					control.update()
-
 			v[i].unhilight(hv)
 			w[s] = v[i]
 			s = s+1
+			if square_id != None:
+				square.erase_square(square_id)
 
 	control.plot_delete(vid)
 	if(vlid != None):
