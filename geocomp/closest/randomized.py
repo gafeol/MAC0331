@@ -52,34 +52,35 @@ def plot_grid(l, eps):
 	control.sleep()
 	return grid_lines
 
-def clear_grid(grid_points, grid_lines):
+def clear_grid(grid_lines):
 	for ln in grid_lines:
 		control.plot_delete(ln)
-	for p, id in grid_points.items():
-		p.unhilight(id)
 
 a = None
 b = None
 ate = -1
 
+painted_points = []
+
 def check(l, epsSq):
-	global a, b, ate
+	global a, b, ate, painted_points
 	eps = math.sqrt(epsSq)
 
 	grid_lines = plot_grid(l, eps)
-	grid_points = {}
 
 	grid = {}
 	it = 0
+	ret = -1
+	
 	for it in range(len(l)):
 		p = l[it]
 		i = math.floor(p.x/(eps/2.))
 		j = math.floor(p.y/(eps/2.))
 
 		vid = None
-		if(it >= ate):
-			vid = p.hilight(COLOR_ALT3)
-			grid_points[p] = vid
+		if(it > ate):
+			ate = it
+			vid = p.hilight('magenta')
 			control.sleep()
 			for di in range(-2, 3):
 				for dj in range(-2, 3):
@@ -91,27 +92,27 @@ def check(l, epsSq):
 						if(distSq < epsSq):
 							a = grid[ii][jj]
 							b = p
-							clear_grid(grid_points, grid_lines)
-							return distSq
+							ret = distSq
+
+			control.plot_delete(vid)
+			hid = p.hilight('cyan')
+			painted_points.append([p, hid])
+
+			if(ret != -1):
+				clear_grid(grid_lines)
+				return ret
 
 		if not i in grid:
 			grid[i] = {}
 		grid[i][j] = p
 
-		ate = max(ate, it+1)
-		if(vid != None):
-			p.unhilight(vid)
-			del grid_points[p]
-		hid = p.hilight(COLOR_ALT1)
-		grid_points[p] = hid;
-		control.sleep()
-
-	clear_grid(grid_points, grid_lines)
-	return -1;
+	clear_grid(grid_lines)
+	return ret;
 
 
 def Randomized (l):
-	global a, b, cntdist, ate
+	global a, b, cntdist, ate, painted_points
+	painted_points = []
 	cntdist = 0
 	ate = -1
 	"Algoritmo randomizado para encontrar o par de pontos mais proximo"
@@ -125,6 +126,9 @@ def Randomized (l):
 	while(epsSq > 0):
 		epsSq = check(l, epsSq)
 	
+	for tp in painted_points:
+		tp[0].unhilight(tp[1])
+
 	a.lineto(b)
 	ret = Segment (a, b)
 	ret.extra_info = 'distancia: %.2f, chamadas de dist2: %d'%(math.sqrt (getdist2 (a, b)), cntdist)
