@@ -98,7 +98,7 @@ def check(l, epsSq):
 			grid[i] = {}
 		grid[i][j] = p
 
-		ate = max(ate, it)
+		ate = max(ate, it+1)
 		if(vid != None):
 			p.unhilight(vid)
 			del grid_points[p]

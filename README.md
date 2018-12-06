@@ -1,3 +1,20 @@
+## Projeto de GeoComp MAC0331
+
+Autores:
+Gabriel Fernandes de Oliveira  - 9345370 
+Luis Gustavo Bitencourt Almeida - 9298207
+
+Implementamos, usando a plataforma disponibilizada pela professora Cris e o monitor Victor Portella, 4 algoritmos que resolvem o problema de encontrar o par de pontos mais próximos:
+
+- Força Bruta
+- Aleatorizado
+- Divisão e conquista
+- Linha de varredura
+
+Os algoritmos e as animações são descritos em detalhe no relatório final da matéria, que pode ser encontrado neste repositório.
+
+Segue o README da plataforma disponibilizada:
+
 Esse programa implementa os seguintes algoritmos para o problema do
 fecho convexo planar:
 
