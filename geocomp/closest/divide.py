@@ -24,14 +24,14 @@ id = None
 
 
 def closest_pair(v, w, l, r):
-	ans = _closest_pair(v, w, l, r)
+	ans = _closest_pair(v, w, l, r, -oo, oo)
 	return ans.dist
 
 def make(dist, a, hia, b, hib, id):
 	return {"dist": dist, "a": a, "hia": hia, "b": b, "hib": hib, "id": id}
 	
 
-def _closest_pair(v, w, l, r):
+def _closest_pair(v, w, l, r, left_x=-oo, right_x=oo):
 	ans = -1.
 	a = b = None
 	hia = hib = None
@@ -47,13 +47,13 @@ def _closest_pair(v, w, l, r):
 	vid = control.plot_vert_line(x)
 	control.sleep()
 
-	lans = _closest_pair(v, w, l, m)
+	lans = _closest_pair(v, w, l, m, left_x, x)
 
 	control.plot_delete(vid)
 	vid = control.plot_vert_line(x, COLOR_ALT2)
 	control.sleep()
 
-	rans = _closest_pair(v, w, m, r)
+	rans = _closest_pair(v, w, m, r, x, right_x)
 
 	control.plot_delete(vid)
 	vid = control.plot_vert_line(x, COLOR_ALT3)
@@ -87,9 +87,9 @@ def _closest_pair(v, w, l, r):
 	vlid = vrid = None
 	lx = rx = None
 	if(res != float("inf")):
-		lx = x - res
+		lx = max(left_x, x - res)
 		vlid = control.plot_vert_line(lx, COLOR_ALT5)
-		rx = x + res
+		rx = min(right_x, x + res)
 		vrid = control.plot_vert_line(rx, COLOR_ALT5)
 		control.sleep()
 
