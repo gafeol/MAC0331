@@ -39,7 +39,7 @@ def Sweep (l):
 			oid = control.plot_vert_line(l[i].x - math.sqrt(closest), COLOR_ALT1)
 
 		# Remocao em O(lgn)
-		while(ult < i and math.sqrt(closest) < l[i].x - l[ult].x):
+		while(ult < i and math.sqrt(closest) <= l[i].x - l[ult].x):
 			T.erasePoint(l[ult])
 			l[ult].unhilight(dt[l[ult]])
 			ult += 1
@@ -104,11 +104,12 @@ def Sweep (l):
 		control.thaw_update()
 		control.update()
 	
-	for p in l:
-		p.unhilight(dt[p])
 	
 	control.thaw_update()
 	control.update()
+	for p in l:
+		if(p in dt):
+			p.unhilight(dt[p])
 
 	ret = Segment (a, b)
 	ret.extra_info = 'distancia: %.2f'%math.sqrt (dist2 (a, b))
