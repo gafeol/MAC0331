@@ -8,13 +8,16 @@ from geocomp.config import *
 from random import shuffle
 import math
 
+def redraw_points(l):
+	global ate, painted_points
 
-cntdist = 0
-
-def getdist2(a, b):
-	global cntdist
-	cntdist += 1
-	return dist2(a, b)
+	for tp in painted_points:
+		tp[0].unhilight(tp[1])
+	painted_points.clear()
+	for i in range(0, ate+1):
+		painted_points.append([l[i], l[i].hilight('cyan')])
+	for i in range(ate, len(l)):
+		painted_points.append([l[i], l[i].hilight('white')])
 
 def plot_grid(l, eps):
 	mnx = mny = float('inf')
@@ -49,6 +52,8 @@ def plot_grid(l, eps):
 		grid_lines.append(id)
 		y += stp
 	
+	redraw_points(l)
+
 	control.sleep()
 	return grid_lines
 
@@ -59,8 +64,6 @@ def clear_grid(grid_lines):
 a = None
 b = None
 ate = -1
-
-painted_points = []
 
 def check(l, epsSq):
 	global a, b, ate, painted_points
@@ -87,7 +90,7 @@ def check(l, epsSq):
 					ii = i + di
 					jj = j + dj
 					if ii in grid and jj in grid[ii]:
-						distSq = getdist2(p, grid[ii][jj])
+						distSq = dist2(p, grid[ii][jj])
 						# Fazer alteracao de grid no final
 						if(distSq < epsSq):
 							a = grid[ii][jj]
@@ -111,7 +114,7 @@ def check(l, epsSq):
 
 
 def Randomized (l):
-	global a, b, cntdist, ate, painted_points
+	global a, b, ate, painted_points
 	painted_points = []
 	cntdist = 0
 	ate = -1
@@ -122,15 +125,17 @@ def Randomized (l):
 
 	a = l[0]
 	b = l[1]
-	epsSq = getdist2(a, b)
+	epsSq = dist2(a, b)
 	while(epsSq > 0):
 		epsSq = check(l, epsSq)
 	
 	for tp in painted_points:
 		tp[0].unhilight(tp[1])
 
+	a.hilight('green')
+	b.hilight('green')
 	a.lineto(b)
 	ret = Segment (a, b)
-	ret.extra_info = 'distancia: %.2f, chamadas de dist2: %d'%(math.sqrt (getdist2 (a, b)), cntdist)
+	ret.extra_info = 'distancia: %.2f'%(math.sqrt (dist2 (a, b)))
 	return ret
 

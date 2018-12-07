@@ -183,6 +183,8 @@ def Divide (l):
 	a = ans['a']
 	b = ans['b']
 
+	a.hilight('green')
+	b.hilight('green')
 	ret = Segment (a, b)
 	ret.extra_info = 'distancia: %.2f'%(dis)
 	return ret

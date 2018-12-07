@@ -34,7 +34,9 @@ def Brute (l):
 				id = a.lineto (b)
 				control.thaw_update() 
 				control.update ()
-	
+
+	a.hilight('green')
+	b.hilight('green')
 	ret = Segment (a, b)
 	ret.extra_info = 'distancia: %.2f'%math.sqrt (dist2 (a, b))
 	return ret

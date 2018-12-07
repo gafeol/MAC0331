@@ -111,6 +111,8 @@ def Sweep (l):
 		if(p in dt):
 			p.unhilight(dt[p])
 
+	a.hilight('green')
+	b.hilight('green')
 	ret = Segment (a, b)
 	ret.extra_info = 'distancia: %.2f'%math.sqrt (dist2 (a, b))
 	return ret
