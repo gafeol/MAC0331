@@ -25,7 +25,6 @@ id = None
 
 def closest_pair(v, w, l, r):
 	ans = _closest_pair(v, w, l, r)
-	print(ans)
 	return ans.dist
 
 def make(dist, a, hia, b, hib, id):
@@ -86,9 +85,12 @@ def _closest_pair(v, w, l, r):
 	control.sleep()
 
 	vlid = vrid = None
+	lx = rx = None
 	if(res != float("inf")):
-		vlid = control.plot_vert_line(x - res, COLOR_ALT5)
-		vrid = control.plot_vert_line(x + res, COLOR_ALT5)
+		lx = x - res
+		vlid = control.plot_vert_line(lx, COLOR_ALT5)
+		rx = x + res
+		vrid = control.plot_vert_line(rx, COLOR_ALT5)
 		control.sleep()
 
 	# Merge
@@ -120,11 +122,11 @@ def _closest_pair(v, w, l, r):
 	for i in range(l, r):
 		v[i] = w[i]
 		if sq(v[i].x - x) < sq(res):
-			hv = v[i].hilight(COLOR_ALT4)
+			hv = v[i].hilight('red')
 			control.sleep()
 			square_id = None
 			if(res != float("inf")):
-				square_id = square.plot_square(v[i].x-res, v[i].y-res, v[i].x+res, v[i].y+res)
+				square_id = square.plot_square(lx, v[i].y-res, rx, v[i].y)
 				control.sleep()
 			for j in range(s-1, l-1, -1):
 				if sq(w[i].y - w[j].y) >= res*res:
